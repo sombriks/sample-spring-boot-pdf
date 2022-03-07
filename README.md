@@ -21,6 +21,7 @@ Load html template as resource, do some processing, then call te pdf library
 ## limitations
 
 - only inline css will be honored
+- css3 features not available (flex and flex-grid are unavailable)
 - images and resources external to the html document will not be loaded
 
 ## further reading
