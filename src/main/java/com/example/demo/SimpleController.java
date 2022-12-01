@@ -2,12 +2,10 @@ package com.example.demo;
 
 import com.itextpdf.text.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -20,7 +18,7 @@ import java.util.Map;
 public class SimpleController {
 
     @Autowired
-    private ResourceLoader resourceLoader;
+    private PdfService service;
 
     @GetMapping
     public Pojo hello() {
@@ -36,7 +34,7 @@ public class SimpleController {
     @GetMapping("template1")
     public void getSimpleTemplate1(HttpServletResponse response) throws Exception {
         String name = "classpath:template1.html";
-        extracted(response, name);
+        render(response, name, null);
     }
 
     @GetMapping("template2")
@@ -45,7 +43,7 @@ public class SimpleController {
         String name = "classpath:template2.html";
         Map<String, Object> vars = new HashMap<>();
         vars.put("x", "correctly");
-        extracted(response, name, vars);
+        render(response, name, vars);
     }
 
 
@@ -58,7 +56,7 @@ public class SimpleController {
     @GetMapping("template3")
     public void getSimpleTemplate3(HttpServletResponse response) throws Exception {
         String name = "classpath:template3.html";
-        extracted(response, name);
+        render(response, name, null);
     }
 
     /**
@@ -72,26 +70,13 @@ public class SimpleController {
         String name = "classpath:template4.html";
         Map<String, Object> vars = new HashMap<>();
         vars.put("customer", "Mr. Robot");
-        extracted(response, name, vars);
+        render(response, name, vars);
     }
 
-    private void extracted(HttpServletResponse response, String name) throws IOException, DocumentException {
-        extracted(response, name, null);
+    private void render(HttpServletResponse response, String name, Map<String, Object> vars) throws IOException, DocumentException {
+        service.render(response.getOutputStream(), name, vars);
     }
 
-    private void extracted(HttpServletResponse response, String name, Map<String, Object> vars) throws IOException, DocumentException {
-        ITextRenderer renderer = new ITextRenderer();
-        Resource resource = resourceLoader.getResource(name);
-        String template2 = new String(Files.readAllBytes(resource.getFile().toPath()));
-        String[] holder = new String[]{template2};
-        if (vars != null) {
-            vars.forEach((String k, Object v) -> {
-                holder[0] = holder[0].replace("${" + k.trim() + "}", v.toString());
-            });
-        }
-        renderer.setDocumentFromString(holder[0]);
-        renderer.layout();
-        renderer.createPDF(response.getOutputStream());
-    }
+
 }
 
